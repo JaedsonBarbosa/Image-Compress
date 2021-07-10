@@ -10,7 +10,8 @@
       content="Compress your photos, in any format, without servers. 
       All done in your browser with maximum privacy and speed."
     />
-    <link rel="icon" type="image/png" href="icon.png" />
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" href="images/icon.png" />
     <title>Image Compress</title>
     <script defer src="https://unpkg.com/browser-image-compression"></script>
     <script defer src="https://unpkg.com/alpinejs"></script>
@@ -37,7 +38,7 @@
     <main>
       <header>
         <section class="container section" x-data="{quality: 50}">
-          <img class="logo" src="icon.png" />
+          <img class="logo" src="images/icon.png" />
           <h1>Image Compress</h1>
           <p>
             A minimal image compressor.
