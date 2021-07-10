@@ -4,7 +4,7 @@
   "name": "Image compressor",
   "short_name": "Image Compress",
   "scope": "/",
-  "display": "browser",
+  "display": "fullscreen",
   "start_url": "https://imagecompress.xyz/",
   "background_color": "transparent",
   "theme_color": "transparent",
