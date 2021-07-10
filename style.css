@@ -1,0 +1,19 @@
+.header .section {
+  padding-top: 7.5rem;
+  padding-bottom: 7.5rem;
+}
+
+.section {
+  text-align: center;
+}
+
+.logo {
+  height: 15rem;
+  margin-bottom: 2rem;
+}
+
+.image {
+  min-height: 5rem;
+  max-height: 15rem;
+  max-width: 100%;
+}

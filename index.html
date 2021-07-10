@@ -3,45 +3,150 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-Language" content="en" />
     <meta name="application-name" content="Local image compressor" />
-    <meta
-      name="keywords"
-      content="image,compressor,image compression,jpeg,png,local,no server"
-    />
     <meta name="author" content="Jaedson Barbosa Serafim" />
     <meta
       name="description"
-      content="Compress your photos, in any format, without servers, all done in your browser with maximum privacy and speed."
+      content="Compress your photos, in any format, without servers. 
+      All done in your browser with maximum privacy and speed."
     />
-    <link rel="icon" type="image/png" href="logo.png" />
-    <title>Locicomp</title>
+    <link rel="icon" type="image/png" href="icon.png" />
+    <title>Image compressor</title>
+    <script defer src="https://cdn.filesizejs.com/filesize.min.js"></script>
+    <script defer src="https://unpkg.com/browser-image-compression"></script>
+    <script defer src="https://unpkg.com/jszip/dist/jszip.min.js"></script>
+    <script defer src="https://unpkg.com/alpinejs"></script>
+
+    <!-- Milligram CSS -->
     <link
-      href="https://fonts.googleapis.com/css?family=Lato:200,300,400,500,600,700"
       rel="stylesheet"
-      type="text/css"
+      href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic"
     />
-    <script
-      type="text/javascript"
-      src="https://cdn.jsdelivr.net/npm/browser-image-compression@1.0.13/dist/browser-image-compression.js"
-    ></script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"
-      integrity="sha512-uVSVjE7zYsGz4ag0HEzfugJ78oHCI1KhdkivjQro8ABL/PRiEO4ROwvrolYAcZnky0Fl/baWKYilQfWvESliRA=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    ></script>
-    <script type="text/javascript" src="https://cdn.filesizejs.com/filesize.min.js"></script>
-    <link href="index.css" rel="stylesheet" />
-    <link href="carousel.css" rel="stylesheet" />
-    <script src="index.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css"
+    />
+
+    <script defer src="compressor.js"></script>
+    <script defer src="saver.js"></script>
+    <link rel="stylesheet" href="style.css" />
   </head>
 
   <body>
-    <div class="default-section">
+    <main class="wrapper">
+      <header class="header">
+        <section class="container section" x-data="{quality: 50}">
+          <img class="logo" src="icon.png" />
+          <h1>Image Compress</h1>
+          <p>
+            A minimal image compressor.
+            <br />
+            <i><small>Currently v1.0.0</small></i>
+          </p>
+          <label for="quality">Result quality</label>
+          <input
+            x-model="quality"
+            type="range"
+            id="quality"
+            min="2"
+            step="4"
+            max="50"
+            @change="compressImages($store.images, quality)"
+          />
+          <br />
+          <button @click="$refs.input.click()">Import files</button>
+          <input
+            x-ref="input"
+            style="display: none"
+            type="file"
+            @change="addImages($store.images, $event)"
+            multiple
+            accept="image/*"
+          />
+        </section>
+      </header>
+      <section x-data x-show="$store.images?.length" class="container section">
+        <h3>Images</h3>
+        <a
+          class="button"
+          x-show="$store.zip"
+          x-transition
+          x-bind:href="$store.zip"
+          download="images.zip"
+        >
+          Download Zip
+        </a>
+        <p>
+          <small>Total size:</small>
+          <br />
+          <span x-text="totalOriginal($store.images)"></span> ->
+          <span x-text="totalCompressed($store.images)"></span>
+        </p>
+        <br>
+        <template x-for="row in getRows($store.images, 3)">
+          <div class="row">
+            <template x-for="col in row">
+              <div class="column">
+                <a x-bind:href="col.fileUrl" target="_blank" x-text="col.originalFile.name"></a>
+                <br>
+                <img x-bind:src="col.fileUrl" class="image" />
+                <p x-text="col.info"></p>
+              </div>
+            </template>
+          </div>
+        </template>
+      </section>
+    </main>
+
+    <script>
+      function getRows(a, n) {
+        return a
+          ?.map((v, i) => (i % n ? undefined : a.slice(i, i + n)))
+          .filter((v) => v)
+      }
+
+      document.addEventListener('alpine:init', () => {
+        Alpine.store('images', [])
+      })
+
+      async function updateZip() {
+        Alpine.store('zip', '')
+        const blob = await generateAsync()
+        Alpine.store('zip', URL.createObjectURL(blob))
+      }
+
+      async function compressImages(images, quality) {
+        await Promise.all(images?.map((v) => v.compress(quality)))
+        await updateZip()
+      }
+
+      async function addImages(images, event) {
+        const files = event.target.files
+        if (!files) return
+        for (let i = 0; i < files.length; i++)
+          images.push(await Compressor.create(files[i], zip))
+        await updateZip()
+      }
+
+      function totalOriginal(images) {
+        const size = images.reduce((p, c) => p + c.originalFile.size, 0)
+        return filesize(size)
+      }
+
+      function totalCompressed(images) {
+        const size = images.reduce((p, c) => p + c.fileFile.size, 0)
+        return filesize(size)
+      }
+    </script>
+
+    <!--<div class="default-section">
       <h1><strong>Image compressor</strong> without server</h1>
       <div class="form-group">
-        <label for="level"> Compression level <span>Choose one of the 4 options</span> </label>
+        <label for="level">Compression level <span>Choose one of the 4 options</span></label>
         <select
           name="level"
           id="level"
@@ -103,8 +208,7 @@
         >
       </button>
     </div>
-    <footer class="default-section">
-      <hr />
+    <footer>
       <h1><strong>About</strong> this site</h1>
       <p>
         One of the big problems with other sites found on the internet is that
@@ -117,6 +221,6 @@
         thus guaranteeing the complete security of all your files and the
         maximum compression speed.
       </p>
-    </footer>
+    </footer> -->
   </body>
 </html>
