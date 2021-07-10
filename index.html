@@ -31,6 +31,11 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css"
     />
 
+    <script
+      type="module"
+      src="https://cdn.jsdelivr.net/npm/@pwabuilder/pwaupdate"
+    ></script>
+
     <script src="index.js"></script>
     <link rel="stylesheet" href="style.css" />
   </head>
@@ -38,6 +43,7 @@
     <main>
       <header>
         <section class="container section" x-data="{quality: 50}">
+          <pwa-update></pwa-update>
           <img class="logo" src="images/icon.png" />
           <h1>Image Compress</h1>
           <p>
