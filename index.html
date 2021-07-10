@@ -12,10 +12,9 @@
     />
     <link rel="icon" type="image/png" href="icon.png" />
     <title>Image compressor</title>
-    <script defer src="https://cdn.filesizejs.com/filesize.min.js"></script>
     <script defer src="https://unpkg.com/browser-image-compression"></script>
-    <script defer src="https://unpkg.com/jszip/dist/jszip.min.js"></script>
     <script defer src="https://unpkg.com/alpinejs"></script>
+    <script src="https://unpkg.com/jszip/dist/jszip.min.js"></script>
 
     <!-- Milligram CSS -->
     <link
@@ -31,14 +30,13 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css"
     />
 
-    <script defer src="compressor.js"></script>
-    <script defer src="saver.js"></script>
+    <script src="index.js"></script>
     <link rel="stylesheet" href="style.css" />
   </head>
 
   <body>
-    <main class="wrapper">
-      <header class="header">
+    <main>
+      <header>
         <section class="container section" x-data="{quality: 50}">
           <img class="logo" src="icon.png" />
           <h1>Image Compress</h1>
@@ -73,7 +71,7 @@
         <h3>Images</h3>
         <a
           class="button"
-          x-show="$store.zip"
+          x-bind:disabled="!$store.zip"
           x-transition
           x-bind:href="$store.zip"
           download="images.zip"
@@ -81,146 +79,45 @@
           Download Zip
         </a>
         <p>
-          <small>Total size:</small>
+          <small>Space savings:</small>
           <br />
-          <span x-text="totalOriginal($store.images)"></span> ->
-          <span x-text="totalCompressed($store.images)"></span>
+          <span x-text="spaceSavings($store.images)"></span> %
         </p>
-        <br>
+        <br />
         <template x-for="row in getRows($store.images, 3)">
           <div class="row">
             <template x-for="col in row">
               <div class="column">
-                <a x-bind:href="col.fileUrl" target="_blank" x-text="col.originalFile.name"></a>
-                <br>
+                <a
+                  x-bind:href="col.fileUrl"
+                  target="_blank"
+                  x-text="col.originalFile.name"
+                ></a>
+                <br />
                 <img x-bind:src="col.fileUrl" class="image" />
-                <p x-text="col.info"></p>
+                <p>
+                  <small x-show="col.compressionRatio != 'Compressing...'">
+                    Compression ratio:
+                  </small>
+                  <span x-text="col.compressionRatio"></span>
+                </p>
               </div>
             </template>
           </div>
         </template>
       </section>
+      <footer class="container">
+        <h3>About</h1>
+        <p>
+          One of the big problems with other sites found on the internet is that
+          they use a central server to compress your photos, which creates a big
+          problem: the time it takes to upload and then download the photos back.
+          To solve that problem, I created this solution, where the photos are
+          treated directly in the browser, without the use of any central server,
+          thus guaranteeing the complete security of all your files and the
+          maximum compression speed.
+        </p>
+      </footer>
     </main>
-
-    <script>
-      function getRows(a, n) {
-        return a
-          ?.map((v, i) => (i % n ? undefined : a.slice(i, i + n)))
-          .filter((v) => v)
-      }
-
-      document.addEventListener('alpine:init', () => {
-        Alpine.store('images', [])
-      })
-
-      async function updateZip() {
-        Alpine.store('zip', '')
-        const blob = await generateAsync()
-        Alpine.store('zip', URL.createObjectURL(blob))
-      }
-
-      async function compressImages(images, quality) {
-        await Promise.all(images?.map((v) => v.compress(quality)))
-        await updateZip()
-      }
-
-      async function addImages(images, event) {
-        const files = event.target.files
-        if (!files) return
-        for (let i = 0; i < files.length; i++)
-          images.push(await Compressor.create(files[i], zip))
-        await updateZip()
-      }
-
-      function totalOriginal(images) {
-        const size = images.reduce((p, c) => p + c.originalFile.size, 0)
-        return filesize(size)
-      }
-
-      function totalCompressed(images) {
-        const size = images.reduce((p, c) => p + c.fileFile.size, 0)
-        return filesize(size)
-      }
-    </script>
-
-    <!--<div class="default-section">
-      <h1><strong>Image compressor</strong> without server</h1>
-      <div class="form-group">
-        <label for="level">Compression level <span>Choose one of the 4 options</span></label>
-        <select
-          name="level"
-          id="level"
-          onclick="return false"
-          class="form-controll"
-        >
-          <option value="50">Minimum</option>
-          <option value="25">Intermediate</option>
-          <option value="10">Maximum</option>
-          <option value="2">Extreme</option>
-        </select>
-      </div>
-      <div class="form-group file-area">
-        <label for="images"
-          >Images <span>Select the images to be compressed</span></label
-        >
-        <input
-          type="file"
-          name="images"
-          id="images"
-          accept="image/*"
-          multiple
-          required
-        />
-        <div class="file-dummy">
-          <div class="success">
-            Great, do you want to add more photos? So drag and drop files here
-            or click here to browse.
-          </div>
-          <div class="default">
-            Drag and drop files here or click here to browse.
-          </div>
-        </div>
-      </div>
-      <button id="compress" style="display: none">
-        <h1 class="loading"><strong>Compressing</strong> images...</h1>
-        <h1 class="default"><strong>Compress</strong> images</h1>
-        <progress
-          id="compressingProgress"
-          style="display: none; width: 100%"
-          value="0"
-          max="100"
-        >
-      </button>
-    </div>
-    <div id="afterCompression" style="display: none" class="default-section">
-      <hr />
-      <h1><strong>Results</strong> with compression</h1>
-      <div id="results-carousel" class="carousel-wrapper"></div>
-      <a href="path_to_file" download="proposed_file_name">Download</a>
-      <button id="save">
-        <h1 class="loading"><strong>Saving</strong> compressed images...</h1>
-        <h1 class="default"><strong>Save</strong> compressed images</h1>
-        <progress
-          id="savingProgress"
-          style="display: none; width: 100%"
-          value="0"
-          max="100"
-        >
-      </button>
-    </div>
-    <footer>
-      <h1><strong>About</strong> this site</h1>
-      <p>
-        One of the big problems with other sites found on the internet is that
-        they use a central server to compress your photos, which creates a big
-        problem: the time it takes to upload and then download the photos back.
-      </p>
-      <p>
-        To solve that problem, I created this solution, where the photos are
-        treated directly in the browser, without the use of any central server,
-        thus guaranteeing the complete security of all your files and the
-        maximum compression speed.
-      </p>
-    </footer> -->
   </body>
 </html>

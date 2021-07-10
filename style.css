@@ -1,4 +1,4 @@
-.header .section {
+header .section {
   padding-top: 7.5rem;
   padding-bottom: 7.5rem;
 }
@@ -16,4 +16,8 @@
   min-height: 5rem;
   max-height: 15rem;
   max-width: 100%;
+}
+
+a:disabled   {
+  pointer-events: none;
 }
