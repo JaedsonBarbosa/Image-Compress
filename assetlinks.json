@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "xyz.imagecompress.twa",
+      "sha256_cert_fingerprints": [
+        "47:F9:19:26:F5:67:97:BB:28:82:0B:9B:9C:A3:E9:03:0F:05:78:52:03:59:FF:25:EF:8D:AD:B8:37:36:08:0C"
+      ]
+    }
+  }
+]
